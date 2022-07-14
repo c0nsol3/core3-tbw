@@ -21,7 +21,7 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
-def process_payments(payment, unprocessed, dynamic, config, exchange, sql):
+def process_payments(payment, unprocessed, dynamic, config, exchange, sql, payout=False):
     logger.info("Transfer Payment")
     logger.debug("Unprocesses payment :")
     logger.debug(unprocessed)
@@ -45,7 +45,30 @@ def process_payments(payment, unprocessed, dynamic, config, exchange, sql):
         tx = payment.build_transfer_transaction(i, str(nonce))
         check[tx['id']] = unique_rowid
         signed_tx.append(tx)
-        nonce += 1        
+        nonce += 1      
+
+    # START
+    transfers = []
+    for transaction in signed_tx:
+        for transfer in transaction["asset"]["transfers"]:
+            transfers.append(transfer)
+    x = {}
+    for trans in transfers:
+        address = trans["recipientId"]
+        if address not in x:
+            x[address] = 0
+        
+        x[address] += trans["amount"]
+    
+    for address, amount in x.items():
+        print(address, amount / 100000000)
+
+    total_payouts = sum([t["amount"] for t in transfers])
+    print("Total payouts: ", total_payouts / 100000000)
+    
+    if payout == False:
+        return
+    # END  
         
     accepted = payment.broadcast_transfer(signed_tx)
         
@@ -74,7 +97,11 @@ def sighandler(signum, frame):
     return
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    payout = False
+    if len(sys.argv) == 2 and sys.argv[1] == "payout":
+        payout = True
+
     # get configuration
     config = Configure()
     if (config.error):
@@ -123,15 +150,16 @@ if __name__ == '__main__':
             sql.open_connection()
             unprocessed = sql.get_staged_payment().fetchall()
             sql.close_connection()
-            process_payments(payments, unprocessed, dynamic, config, exchange, sql)
+            process_payments(payments, unprocessed, dynamic, config, exchange, sql, payout=payout)
 
  
         logger.info("End Script - Looping")
         #killsig.wait(data.block_check)
-        killsig.wait(1200)
+        break
+        # killsig.wait(1200)
 
-        if killsig.is_set():
-            logger.debug("Kill switch set. Breaking the main loop.")
-            break
+        # if killsig.is_set():
+        #     logger.debug("Kill switch set. Breaking the main loop.")
+        #     break
     
     logger.info("< Terminating PAY script.")

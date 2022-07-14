@@ -227,7 +227,10 @@ if __name__ == '__main__':
         
             # check interval for payout
             stage, unpaid_voters, unpaid_delegate = interval_check(block_count, config.interval)
-        
+
+            # prefer not to set staging yet at this point but set it at the time when payout is being done using `time.sh`
+            stage = False
+
             # check if true to stage payments
             if stage == True and sum(unpaid_voters.values()) > 0:
                 logger.info("Staging payments")
@@ -238,7 +241,9 @@ if __name__ == '__main__':
         logger.info("End Script - Looping")
         logger.info("")
         #killsig.wait(data.block_check)
-        killsig.wait(1200)
+
+        # no need to wait for 1200 seconds...
+        killsig.wait(12)
         if killsig.is_set():
             logger.debug("Kill switch set. Breaking the main loop.")
             break

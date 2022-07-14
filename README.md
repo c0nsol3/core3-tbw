@@ -1,5 +1,14 @@
 # Python True Block Weight - Core 3
 
+This is a forked project with minor modifications that only intends to run tbw.py and pay.py without pool.py
+
+Modification in this fork:
+
+- don't stage payouts when running `tbw.py` process
+- only stage payouts when running `tbw.py` with `--manualPay` flag (used in `payout.sh`)
+- `pay.py` will output preview of the payout 
+- by default `pay.py` (used in `payout.sh`) will exit before transactions gets broadcasted, if you want to broadcast you must run a `payout` flag, eg: `pay.py payout`
+
 ## Prerequisites
 
 1. Install pip and python3.6 or above
@@ -15,46 +24,27 @@ yarn global add pm2
 ## Clean / New Installation
 
 ```sh
-# Install and sync relay server
 # clone repository
-git clone https://github.com/galperins4/core3-tbw
+git clone https://github.com/c0nsol3/core3-tbw
 cd ~/core3-tbw
-# switch to solar branch
-git checkout solar
-# install and activate virtual environment
-python3 -m venv .venv
-. .venv/bin/activate
-# Workaround for Solar vers > 3.2.0-next.0 setting CPATH 
-# causing psycopg2 compilation error for missing header files
-if [ -n "$CPATH" ]; then
-    SAVEDCPATH=$CPATH
-    export CPATH="/usr/include"
-fi
-# install requirements
-pip3 install -r requirements.txt
-# deactivate virtual environment
-deactivate
-if [ -n "$SAVEDCPATH" ]; then
-    export CPATH=$SAVEDCPATH
-fi
 
-# clone config example
+# switch to solar branch
+git checkout mods
+
+# create tbw environment
+python3 -m venv .venv/tbw
+
+# activate tbw environment
+source .venv/tbw/bin/activate
+
+# copy config example
 cp ~/core3-tbw/core/config/config.ini.example ~/core3-tbw/core/config/config.ini
 # fill out config (see below)
 nano ~/core3-tbw/core/config/config.ini
 
-# if you will run a pool; clone pool config example
-cp ~/core3-tbw/core/config/pool_config.ini.example ~/core3-tbw/core/config/pool_config.ini
-# fill out config (see below)
-nano ~/core3-tbw/core/config/pool_config.ini
-
-# run script with pm2
+# start a pm2 process for tbw
 cd ~/core3-tbw/core
-# if you will run the pool along;
-pm2 start apps.json
-# if you will not run the pool;
 pm2 start apps.json --only tbw
-pm2 start apps.json --only pay
 ```
 
 ## Configuration & Usage
