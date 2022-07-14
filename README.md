@@ -44,6 +44,10 @@ nano ~/core3-tbw/core/config/config.ini
 
 # start a pm2 process for tbw
 cd ~/core3-tbw/core
+
+pm2 start apps.json --only tbw
+pm2 logs tbw
+# after you see `INFO Finished setting up database` in the logs run below command again which starts the sync process
 pm2 start apps.json --only tbw
 ```
 
