@@ -67,6 +67,7 @@ def process_payments(payment, unprocessed, dynamic, config, exchange, sql, payou
     print("Total payouts: ", total_payouts / 100000000)
     
     if payout == False:
+        print("Exiting before payouts get broadcasted and handled. If you want to broadcast payments run with a payout flag!")
         return
     # END  
         
