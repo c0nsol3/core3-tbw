@@ -54,7 +54,7 @@ class Database:
     def get_all_blocks(self):
         try:
             return self.cursor.execute(f"""SELECT "id","timestamp","reward","total_fee",
-            "height", "burned_fee", "dev_fund" FROM blocks WHERE "generator_public_key" = '{self.publickey}' 
+            "height", "burned_fee", "donations" FROM blocks WHERE "generator_public_key" = '{self.publickey}' 
             ORDER BY "height" DESC""").fetchall()
         except Exception as e:
             self.logger.error(e)
@@ -63,7 +63,7 @@ class Database:
     def get_limit_blocks(self, timestamp):
         try:
             return self.cursor.execute(f"""SELECT "id","timestamp","reward","total_fee",
-            "height", "burned_fee", "dev_fund" FROM blocks WHERE "generator_public_key" = '{self.publickey}' AND 
+            "height", "burned_fee", "donations" FROM blocks WHERE "generator_public_key" = '{self.publickey}' AND 
             "timestamp" > {timestamp} ORDER BY "height" """).fetchall()
         except Exception as e:
             self.logger.error(e)
@@ -192,7 +192,7 @@ class Database:
                 block_rewards = [int(i) for i in output[0]]
 
             # Dev fund
-            output = self.cursor.execute(f"""SELECT SUM(val) FROM ( SELECT SUM(value::numeric) val FROM blocks, jsonb_each_text(dev_fund) WHERE 
+            output = self.cursor.execute(f"""SELECT SUM(val) FROM ( SELECT SUM(value::numeric) val FROM blocks, jsonb_each_text(donations) WHERE 
             "timestamp" <= {timestamp} AND "timestamp" > {chkpoint_timestamp} AND "generator_public_key" = '{account}' ) AS "filtered" """).fetchall()
 
             if output[0][0] != None:
